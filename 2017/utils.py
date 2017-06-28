@@ -5,7 +5,6 @@ from vincenty import vincenty
 
 
 K_NO_RESPONSE = 'no response from google API'
-tKey = 'AIzaSyARU5rBJNB4du2bKDEEDpN5eIyut3biat4'
 gmaps = googlemaps.Client(tKey)
 
 
