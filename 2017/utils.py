@@ -23,8 +23,9 @@ def geocode_api(place):
 
 
 def closest_city(p, cities):
+    " return index of nearest city to village p and distance in kilometers "
     distances = cities.apply(lambda city: vincenty(p, (city.latitude, city.longitude)), axis=1)
-    return (np.argmin(distances), min(distances))
+    return (cities.index[np.argmin(distances)], min(distances))
 
 
 # lat/long is reversed in village_list_tndata_coords_small
@@ -35,10 +36,16 @@ def find_closest(f_villages, f_cities):
         rename(columns= {"long": "latitude", "lat": "longitude"})
     cities = pd.read_csv("data/processed/%s" % f_cities).\
         rename(columns = {"lat": "latitude", "longi":"longitude"})
+
+    # closest cities is indexed on village
     closest_cities = villages.apply(lambda village: closest_city((village.latitude, village.longitude), cities), axis=1)
-    villages['city_index'] = [c[0] for c in closest_cities]
-    villages_appended = pd.merge(villages, cities[["city", "state"]],
-                                 'inner', left_on='city_index', right_index=True)
-    villages_appended['distance'] = [c[1] for c in closest_cities]
-    villages_appended.drop("city_index", axis=1, inplace=True)
+    closest_cities = pd.DataFrame({"city_index": closest_cities.apply(lambda x: x[0]),
+              "distance": closest_cities.apply(lambda x: x[1])},
+             index=closest_cities.index)
+    # add city, state to closest_cities
+    closest_cities = pd.merge(closest_cities, cities[["city", "state"]],
+                              "inner", left_on="city_index", right_index=True)
+
+    villages_appended = pd.merge(villages, closest_cities, "inner",
+                                 left_index=True, right_index=True)
     return villages_appended
