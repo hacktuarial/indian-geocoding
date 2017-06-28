@@ -3,6 +3,8 @@ import numpy as np
 import googlemaps
 from vincenty import vincenty
 
+from key import tKey
+
 
 K_NO_RESPONSE = 'no response from google API'
 gmaps = googlemaps.Client(tKey)
